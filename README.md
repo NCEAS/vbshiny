@@ -1,4 +1,4 @@
-## Product: This is a dataone tagline for the product
+## vbshiny: A Helm chart for shiny-server deployment
 
 - **Authors**: Jones, Matthew (https://orcid.org/0000-0003-0077-4738); ...
 - **License**: [Apache 2](http://opensource.org/licenses/Apache-2.0)
