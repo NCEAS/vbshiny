@@ -1,0 +1,29 @@
+# Load all files in the "config" directory into a ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-shiny-configfiles
+  labels:
+    {{- include "vegbank-shinyverse.labels" . | nindent 4 }}
+{{/*{{ (tpl (.Files.Glob "config/*").AsConfig . ) | indent 4 }}*/}}
+data:
+{{- $files := .Files.Glob "config/*" }}
+{{- range $path, $fileBytes := $files }}
+  {{ base $path }}: |-
+{{ tpl ($fileBytes | toString) $ | nindent 4 }}
+{{- end }}
+---
+# Load all files in the "app" directory into a ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-shiny-app
+  labels:
+    {{- include "vegbank-shinyverse.labels" . | nindent 4 }}
+{{/*{{ (tpl (.Files.Glob "app/*").AsConfig . ) | indent 4 }}*/}}
+data:
+{{- $files := .Files.Glob "app/*" }}
+{{- range $path, $fileBytes := $files }}
+  {{ base $path }}: |-
+{{ tpl ($fileBytes | toString) $ | nindent 4 }}
+{{- end }}

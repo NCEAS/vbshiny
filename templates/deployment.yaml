@@ -1,0 +1,93 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "vegbank-shinyverse.fullname" . }}
+  labels:
+    {{- include "vegbank-shinyverse.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "vegbank-shinyverse.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "vegbank-shinyverse.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "vegbank-shinyverse.serviceAccountName" . }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          {{- with .Values.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            {{- if .Values.extraVolumeMounts }}
+            {{- tpl (toYaml .Values.extraVolumeMounts) . | nindent 12 }}
+            {{- end }}
+            - mountPath: /etc/shiny-server/shiny-server.conf
+              subPath: shiny-server.conf
+              name: {{ .Release.Name }}-config-volume
+              readOnly: true
+            - mountPath: /srv/shiny-server{{ .Values.app.path }}
+              name: {{ .Release.Name }}-app-volume
+              readOnly: true
+      volumes:
+        {{- if .Values.extraVolumes }}
+        {{- tpl (toYaml .Values.extraVolumes) . | nindent 8 }}
+        {{- end }}
+        - name: {{ .Release.Name }}-config-volume
+          configMap:
+            name: {{ .Release.Name }}-shiny-configfiles
+            defaultMode: 0644
+        - name: {{ .Release.Name }}-app-volume
+          configMap:
+            name: {{ .Release.Name }}-shiny-app
+            defaultMode: 0644
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
