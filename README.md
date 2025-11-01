@@ -20,7 +20,7 @@ Documentation is a work in progress, and can be found ...
 Build the Docker image with:
 
 ```
-`docker build -t vbshiny:0.1.0 .
+docker build -t vbshiny:0.0.1 .
 ```
 
 Then publish the image to a public image repository.
