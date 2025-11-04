@@ -1,6 +1,6 @@
 ## vbshiny: A Helm chart for shiny-server deployment
 
-- **Authors**: Jones, Matthew (https://orcid.org/0000-0003-0077-4738); ...
+- **Authors**: Jones, Matthew (https://orcid.org/0000-0003-0077-4738); Darian Gill ()
 - **License**: [Apache 2](http://opensource.org/licenses/Apache-2.0)
 - [Package source code on GitHub](https://github.com/NCEAS/vbshiny)
 - [**Submit Bugs and feature requests**](https://github.com/NCEAS/vbshiny/issues)
@@ -8,14 +8,18 @@
 
 A Helm chart to build and deploy a Shiny application on the `rocker/shiny-verse` image.
 
-VegBank is an open source, community project.  We [welcome contributions](./CONTRIBUTING.md) in many forms, including code, graphics, documentation, bug reports, testing, etc.
+The chart includes configuration options to modify the overall Shiny configuration through a ConfgMap,
+and includes an example app in the `app` directory which illustrates access to the VegBank API. 
 
+VegBank is an open source, community project.  We [welcome contributions](./CONTRIBUTING.md) in 
+many forms, including code, graphics, documentation, bug reports, testing, etc.
 
-## Documentation
-
-Documentation is a work in progress, and can be found ...
 
 ## Development build
+
+For the Shiny app to run, it's dependencies must be satisfied by the image that is run. The current
+Dockerfile provides the dependencies needed for the sample app, installing both apt packages and
+R packages that are needed.
 
 Build the Docker image with:
 
@@ -24,12 +28,20 @@ docker build -t vbshiny:0.0.1 .
 ```
 
 Then publish the image to a public image repository.
-i
+
+In the future, a more extensible approach would be to build the base image, and then use a 
+package DESCRIPTION file or other mechanism to list runtime R dependencies to be installed
+in the image. This would allow the Shiny image to be reused for a larger set of applications, 
+at the expense of startup time as packages get installed.
+
 Deploy by providing a custom values file and installing with helm:
 
 ```
 helm upgrade --install -n <namespace> <release> .
 ```
+
+By default, 3 replicas of the shiny deployment are created, each can serve the application to
+multiple users. Change the horizontal scale of the application with `kubectl scale`.
 
 ## License
 ```
