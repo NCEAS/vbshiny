@@ -1,6 +1,6 @@
 ## vbshiny: A Helm chart for shiny-server deployment
 
-- **Authors**: Jones, Matthew (https://orcid.org/0000-0003-0077-4738); Darian Gill ()
+- **Authors**: Jones, Matthew (https://orcid.org/0000-0003-0077-4738); Gill, Darian ()
 - **License**: [Apache 2](http://opensource.org/licenses/Apache-2.0)
 - [Package source code on GitHub](https://github.com/NCEAS/vbshiny)
 - [**Submit Bugs and feature requests**](https://github.com/NCEAS/vbshiny/issues)
@@ -42,6 +42,18 @@ helm upgrade --install -n <namespace> <release> .
 
 By default, 3 replicas of the shiny deployment are created, each can serve the application to
 multiple users. Change the horizontal scale of the application with `kubectl scale`.
+
+## Technical notes
+
+- Shiny is a webapp that opens a persistent websocket to communicate from the browser to
+  the backend shiny server. Under kubernetes, this web socket will be prematurely closed
+  unless particular configuration steps are taken, as done in this chart:
+    - Ensure the proxy headers are set correctly by setting `$connection_upgrade` properly.
+      The default nginx has most of the 
+      [required proxy headers](https://support.posit.co/hc/en-us/articles/213733868-Running-Shiny-Server-with-a-Proxy) 
+      set correctly, with the small tweak provided in the nginx configuration snippet
+    - Ensure repeated requests from clients are handled by the same pod via setting a 
+      session affinity cookie
 
 ## License
 ```
