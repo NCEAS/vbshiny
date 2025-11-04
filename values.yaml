@@ -109,8 +109,23 @@ ingress:
   ##   annotations:
   ##     cert-manager.io/cluster-issuer: "letsencrypt-prod"
   ##
+  ## The affinity and session cookie annotations are needed to ensure shiny session traffic 
+  ## gets directed to the same pod
+  ##
+  ## The `http_upgrade` configuration snippet is needed to ensure that web sockets are proxied correctly
+  ##      See: https://support.posit.co/hc/en-us/articles/213733868-Running-Shiny-Server-with-a-Proxy
   annotations:
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/affinity: "cookie"
+    nginx.ingress.kubernetes.io/session-cookie-name: "shiny-session"
+    nginx.ingress.kubernetes.io/session-cookie-expires: "172800" # 2 days
+    nginx.ingress.kubernetes.io/session-cookie-max-age: "172800" # 2 days
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      if ($http_upgrade = '') {
+          set $connection_upgrade close;
+      }
 
   ## @param ingress.hosts List of hosts to be used for the ingress
   ## Each host must have a path defined, and the pathType must be set to either
